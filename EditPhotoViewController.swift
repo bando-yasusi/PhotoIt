@@ -79,8 +79,20 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate {
         stickyNote.addSubview(stickyImageView)
         
         // テキストビューを作成
-        let padding: CGFloat = 10
-        textView = UITextView(frame: stickyNote.bounds.insetBy(dx: padding, dy: padding))
+        // 左側により大きな余白を設定して矢印からはみ出さないようにする
+        let paddingLeft: CGFloat = 25  // 左側の余白を増やす
+        let paddingRight: CGFloat = 10
+        let paddingVertical: CGFloat = 10
+        
+        // 左右非対称な余白を設定したフレームを作成
+        let textViewFrame = CGRect(
+            x: stickyNote.bounds.origin.x + paddingLeft,
+            y: stickyNote.bounds.origin.y + paddingVertical,
+            width: stickyNote.bounds.width - paddingLeft - paddingRight,
+            height: stickyNote.bounds.height - (paddingVertical * 2)
+        )
+        
+        textView = UITextView(frame: textViewFrame)
         textView.backgroundColor = .clear
         textView.font = UIFont.systemFont(ofSize: 14)
         textView.textAlignment = .center
