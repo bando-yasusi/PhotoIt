@@ -1,72 +1,155 @@
 import UIKit
 import PDFKit
 
-// コンテキストメニューを完全に無効化するカスタムUITextView
+// コンテキストメニューとタッチ操作を完全に無効化するカスタムUITextView
 class NoMenuTextView: UITextView {
-    // 初期化時に必要な設定を行う
-    override init(frame: CGRect, textContainer: NSTextContainer?) {
-        super.init(frame: frame, textContainer: textContainer)
-        self.setupTextView()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        self.setupTextView()
-    }
-    
-    // 必要な初期設定をまとめて行う
-    private func setupTextView() {
-        // コンテキストメニュー関連の設定
-        self.dataDetectorTypes = []
-        self.allowsEditingTextAttributes = false
-        self.autocorrectionType = .no
-        self.autocapitalizationType = .none
-        self.spellCheckingType = .no
-        self.smartQuotesType = .no
-        self.smartDashesType = .no
-        self.smartInsertDeleteType = .no
-        
-        // 長押しジェスチャーを無効化
-        for recognizer in self.gestureRecognizers ?? [] {
-            if recognizer is UILongPressGestureRecognizer {
-                recognizer.isEnabled = false
-                self.removeGestureRecognizer(recognizer)
-            }
-        }
-    }
-    
-    // ファーストレスポンダーになれるようにする（編集のため）
+
     override var canBecomeFirstResponder: Bool {
-        return true
+        return true // キーボードは表示する
     }
-    
-    // すべてのコンテキストメニューアクションを無効化
+
+    // コピー、ペースト、選択などのメニューを無効化
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         return false
     }
-    
-    // 入力補助アイテムを完全に無効化
-    override var inputAssistantItem: UITextInputAssistantItem {
-        let assistantItem = super.inputAssistantItem
-        assistantItem.leadingBarButtonGroups = []
-        assistantItem.trailingBarButtonGroups = []
-        return assistantItem
+
+    // 初期化処理
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+        configure()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        configure()
+    }
+
+    private func configure() {
+        isEditable = true
+        isSelectable = true    // キーボードを表示するため必要
+        isScrollEnabled = false // スクロールを無効化
+        dataDetectorTypes = [] // URLや電話番号などの検出を無効化
+        autocorrectionType = .no
+        spellCheckingType = .no
+        smartQuotesType = .no
+        smartDashesType = .no
+        smartInsertDeleteType = .no
+        inputAssistantItem.leadingBarButtonGroups = [] // 上部バー（ペーストなど）を非表示
+        inputAssistantItem.trailingBarButtonGroups = []
+        
+        // ドラッグアンドドロップを無効化
+        textDragInteraction?.isEnabled = false
+        
+        // ドロップインタラクションを無効化
+        if let dropInteraction = textDropInteraction {
+            removeInteraction(dropInteraction)
+        }
+        
+        // すべてのジェスチャー認識機を無効化
+        if let gestures = gestureRecognizers {
+            for gesture in gestures {
+                gesture.isEnabled = false
+                removeGestureRecognizer(gesture)
+            }
+        }
+        
+        // メニュー表示通知を監視
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(willShowMenu),
+                                               name: UIMenuController.willShowMenuNotification,
+                                               object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(didShowMenu),
+                                               name: UIMenuController.didShowMenuNotification,
+                                               object: nil)
+        
+        // テキスト選択通知を監視
+        NotificationCenter.default.addObserver(self,
+                                              selector: #selector(textDidChangeSelection),
+                                              name: UITextView.didChangeSelectionNotification,
+                                              object: self)
     }
     
-    // タッチイベントをオーバーライドして長押しを無効化
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesBegan(touches, with: event)
-        // 長押しジェスチャーを再度無効化（念のため）
-        for recognizer in self.gestureRecognizers ?? [] {
-            if recognizer is UILongPressGestureRecognizer {
-                recognizer.isEnabled = false
-            }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // 日本語変換の候補バーを防ぐ（任意）
+    override var textInputContextIdentifier: String? {
+        return nil
+    }
+
+    override var textInputMode: UITextInputMode? {
+        return UITextInputMode.activeInputModes.first
+    }
+    
+    // メニューが表示される直前に呼ばれる
+    @objc private func willShowMenu(_ notification: Notification) {
+        // メニューを強制的に非表示にする
+        UIMenuController.shared.hideMenu()
+        
+        // 非同期でもう一度メニューを非表示にする
+        DispatchQueue.main.async {
+            UIMenuController.shared.hideMenu()
+        }
+        
+        // さらに別のタイミングでもメニューを非表示にする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            UIMenuController.shared.hideMenu()
         }
     }
     
-    // メニューコントローラーを無効化
-    override var keyCommands: [UIKeyCommand]? {
+    // メニューが表示された直後に呼ばれる
+    @objc private func didShowMenu(_ notification: Notification) {
+        // メニューを強制的に非表示にする
+        UIMenuController.shared.hideMenu()
+        
+        // 非同期でもう一度メニューを非表示にする
+        DispatchQueue.main.async {
+            UIMenuController.shared.hideMenu()
+        }
+    }
+    
+    // テキスト選択変更時に選択を解除
+    @objc private func textDidChangeSelection(_ notification: Notification) {
+        // 長い選択があれば解除
+        if selectedRange.length > 0 {
+            let cursorPosition = selectedRange.location + selectedRange.length
+            selectedRange = NSRange(location: cursorPosition, length: 0)
+            UIMenuController.shared.hideMenu()
+        }
+    }
+    
+    // 選択範囲の表示を無効化
+    override func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
         return []
+    }
+    
+    // タッチイベントをキャンセル
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        UIMenuController.shared.hideMenu()
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+        UIMenuController.shared.hideMenu()
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        UIMenuController.shared.hideMenu()
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        UIMenuController.shared.hideMenu()
+    }
+    
+    // ジェスチャー認識を無効化
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        return false
     }
 }
 
@@ -165,59 +248,53 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         stickyImageView.image = UIImage(named: "arrow_left_yellow")
         stickyImageView.contentMode = .scaleAspectFit
         stickyImageView.isUserInteractionEnabled = false
-        stickyNote.addSubview(stickyImageView)
         
         // テキストビューを作成
-        // 左側により大きな余白を設定して矢印からはみ出さないようにする
-        let paddingLeft: CGFloat = 43  // 左側の余白を増やす（45から43に変更）
-        let paddingRight: CGFloat = 10
-        let paddingVertical: CGFloat = 10
+        let textViewFrame = CGRect(
+            x: 43, // 矢印の幅を考慮した左余白
+            y: 0,  // 上下の余白をなくす
+            width: stickyNote.bounds.width - 53, // 左余白を考慮した幅
+            height: stickyNote.bounds.height // 上下の余白をなくす
+        )
         
-        // 付箋のテキストビューを作成（カスタムNoMenuTextViewを使用）
-        textView = NoMenuTextView(frame: CGRect(
-            x: 43, // 左側に余白を設ける（矢印部分のため）
-            y: 0, // 上の余白を完全になくす（2から0に変更）
-            width: stickyNote.bounds.width - 53, // 余白を考慮
-            height: stickyNote.bounds.height // 下の余白を完全になくす（4から0に変更）
-        ))
-        textView.backgroundColor = .clear
-        textView.font = UIFont.systemFont(ofSize: 19) // 20から19に変更し、5行入るように調整
-        textView.text = "テキストを入力"
-        textView.textColor = UIColor.lightGray
-        textView.textAlignment = .left // 左詰めに変更
+        // カスタムテキストビューを作成
+        textView = NoMenuTextView(frame: textViewFrame)
         textView.delegate = self
-        textView.returnKeyType = .done
-        textView.isScrollEnabled = false
-        
-        // テキストビューの内部余白を最小限にする
-        textView.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        textView.textContainer.lineFragmentPadding = 0
-        
-        // 念のため、UIMenuControllerを無効化
-        NotificationCenter.default.addObserver(self, selector: #selector(willShowMenu(_:)), name: UIMenuController.willShowMenuNotification, object: nil)
-        
+        textView.backgroundColor = .clear
+        textView.font = UIFont.systemFont(ofSize: 19)
+        textView.textColor = .black
+        textView.textAlignment = .left
         stickyNote.addSubview(textView)
         
-        // 移動用のパンジェスチャーを追加
+        // ズーム機能を完全に無効化
+        disableAllZoomFunctionality()
+        
+        // メニュー表示通知を監視
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(willShowMenu(_:)),
+                                               name: UIMenuController.willShowMenuNotification,
+                                               object: nil)
+        
+        // パンジェスチャーを設定
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         panGesture.delegate = self
-        panGesture.cancelsTouchesInView = false  // タッチイベントをキャンセルしない
+        panGesture.cancelsTouchesInView = false // テキスト入力を妨げないようにする
         stickyNote.addGestureRecognizer(panGesture)
         
-        // 回転用のジェスチャーを追加
+        // 回転ジェスチャーを設定
         let rotationGesture = UIRotationGestureRecognizer(target: self, action: #selector(handleRotationGesture(_:)))
         rotationGesture.delegate = self
-        rotationGesture.cancelsTouchesInView = false  // タッチイベントをキャンセルしない
+        rotationGesture.cancelsTouchesInView = false // テキスト入力を妨げないようにする
         stickyNote.addGestureRecognizer(rotationGesture)
         
-        // タップジェスチャーを追加（テキスト編集のため）
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
-        tapGesture.delegate = self
-        tapGesture.cancelsTouchesInView = false
-        stickyNote.addGestureRecognizer(tapGesture)
-        
-        // 画像ビューに付箋を追加
-        imageView.addSubview(stickyNote)
+        // テキストビューを自動的にファーストレスポンダーにする
+        DispatchQueue.main.async {
+            self.textView.becomeFirstResponder()
+            self.isEditingText = true
+            
+            // メニューを確実に非表示にする
+            UIMenuController.shared.hideMenu()
+        }
     }
     
     // MARK: - Keyboard Handling
@@ -379,54 +456,33 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     }
     
     @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
-        // タップイベントをキャンセルして他のジェスチャーに伝播しないようにする
+        // タップジェスチャーは新しい仕様では使用しないが、互換性のために残す
         gesture.cancelsTouchesInView = true
         
-        // タップしたときにテキストビューにフォーカスを当てる
-        if !textView.isFirstResponder {
-            textView.becomeFirstResponder()
-        }
-        
-        // UIMenuControllerを確実に無効化
+        // メニューを確実に非表示にする
         UIMenuController.shared.hideMenu()
         
-        // 他のジェスチャー認識を防止
-        if let scrollView = imageView.superview as? UIScrollView {
-            // ズームとスクロールを完全に無効化
-            scrollView.isScrollEnabled = false
-            
-            // すべてのズーム関連ジェスチャーを無効化
-            if let pinchGesture = scrollView.pinchGestureRecognizer {
-                pinchGesture.isEnabled = false
-                scrollView.removeGestureRecognizer(pinchGesture)
-            }
-            
-            // すべてのタップジェスチャーを一時的に無効化
-            for recognizer in scrollView.gestureRecognizers ?? [] {
-                if recognizer is UITapGestureRecognizer {
-                    recognizer.isEnabled = false
-                }
-                
-                // ピンチジェスチャーも確実に無効化
-                if recognizer is UIPinchGestureRecognizer {
-                    recognizer.isEnabled = false
-                    scrollView.removeGestureRecognizer(recognizer)
-                }
-            }
-            
-            // 編集終了時に再度スクロールを有効にするため、遅延実行
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                scrollView.isScrollEnabled = true
-                // ズームは引き続き無効のまま
-                self.disableAllZoomFunctionality()
-            }
+        // ズーム機能を完全に無効化
+        disableAllZoomFunctionality()
+        
+        // テキストビューをファーストレスポンダーにする
+        textView.becomeFirstResponder()
+        
+        // テキスト選択を解除
+        if let noMenuTextView = textView as? NoMenuTextView {
+            noMenuTextView.selectedRange = NSRange(location: noMenuTextView.selectedRange.location, length: 0)
         }
         
-        // すべてのタップイベントを消費
-        gesture.cancelsTouchesInView = true
+        // 非同期でもう一度メニューを非表示にする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            UIMenuController.shared.hideMenu()
+            self.disableAllZoomFunctionality()
+        }
         
-        // 念のため、ズーム機能を再度無効化
-        disableAllZoomFunctionality()
+        // さらに別のタイミングでもメニューを非表示にする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            UIMenuController.shared.hideMenu()
+        }
     }
     
     @objc private func handleRotationGesture(_ gesture: UIRotationGestureRecognizer) {
@@ -487,31 +543,51 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     
     // MARK: - UIScrollViewDelegate
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        // ズーム対象のビューを返さないことでズームを無効化
+        // ズーム機能を完全に無効化するためnilを返す
         return nil
     }
     
-    // スクロールビューのすべてのズーム関連メソッドをオーバーライド
     func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
         // ズームを防止
         scrollView.pinchGestureRecognizer?.isEnabled = false
-        
-        // ズームをキャンセル
         scrollView.zoomScale = 1.0
-        
-        // ズームジェスチャーを完全に削除
-        if let pinchGesture = scrollView.pinchGestureRecognizer {
-            scrollView.removeGestureRecognizer(pinchGesture)
-        }
-        
-        // 念のため、すべてのズーム機能を再度無効化
+        scrollView.minimumZoomScale = 1.0
+        scrollView.maximumZoomScale = 1.0
         disableAllZoomFunctionality()
+        
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
     }
     
+
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // スクロールを無効化
+        scrollView.isScrollEnabled = false
+        
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
+        
+        // テキスト選択を解除
+        if let textView = self.textView {
+            textView.selectedRange = NSRange(location: textView.selectedRange.location, length: 0)
+        }
+        
+        // 非同期でもう一度メニューを非表示にする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            UIMenuController.shared.hideMenu()
+        }
+    }
+    
+    // ズーム後の処理を無効化
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        // ズーム後の処理を無効化
         scrollView.zoomScale = 1.0
+        scrollView.minimumZoomScale = 1.0
+        scrollView.maximumZoomScale = 1.0
         disableAllZoomFunctionality()
+        
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
     }
     
     // スクロールビューがズームを開始する前に呼ばれる
@@ -523,43 +599,62 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     
     // メニューコントローラーの表示を防止
     @objc private func willShowMenu(_ notification: Notification) {
+        // メニューを強制的に非表示にする
         UIMenuController.shared.hideMenu()
+        
+        // 後で再度表示されるのを防止するため、非同期でもう一度非表示にする
+        DispatchQueue.main.async {
+            UIMenuController.shared.hideMenu()
+        }
+        
+        // さらに別のタイミングでもメニューを非表示にする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            UIMenuController.shared.hideMenu()
+        }
     }
     
-    // ズーム機能を徹底的に無効化する関数
+    // ズーム機能を徐底的に無効化する関数
     private func disableAllZoomFunctionality() {
         if let scrollView = imageView.superview as? UIScrollView {
-            // ズーム関連の設定を無効化
-            scrollView.maximumZoomScale = 1.0
-            scrollView.minimumZoomScale = 1.0
-            scrollView.bouncesZoom = false
-            scrollView.delaysContentTouches = false
+            // ズーム関連のすべての設定を無効化
+            scrollView.pinchGestureRecognizer?.isEnabled = false
             scrollView.zoomScale = 1.0
+            scrollView.minimumZoomScale = 1.0
+            scrollView.maximumZoomScale = 1.0
+            scrollView.bouncesZoom = false
+            scrollView.isScrollEnabled = false
+            scrollView.delaysContentTouches = false
+            scrollView.canCancelContentTouches = false
             
-            // すべてのズーム関連ジェスチャーを無効化
-            if let pinchGesture = scrollView.pinchGestureRecognizer {
-                pinchGesture.isEnabled = false
-                scrollView.removeGestureRecognizer(pinchGesture)
-            }
-            
-            // スクロールビューのデリゲートを設定
-            scrollView.delegate = self
-            
-            // すべてのジェスチャーを確認して無効化
-            for recognizer in scrollView.gestureRecognizers ?? [] {
-                // ダブルタップジェスチャーを無効化
-                if let tapRecognizer = recognizer as? UITapGestureRecognizer,
-                   tapRecognizer.numberOfTapsRequired > 1 {
-                    tapRecognizer.isEnabled = false
-                    scrollView.removeGestureRecognizer(tapRecognizer)
-                }
-                
-                // ピンチジェスチャーを無効化
-                if recognizer is UIPinchGestureRecognizer {
-                    recognizer.isEnabled = false
-                    scrollView.removeGestureRecognizer(recognizer)
+            // すべてのジェスチャーを確認し、ズーム関連のものを無効化
+            if let gestures = scrollView.gestureRecognizers?.compactMap({ $0 }) {
+                for recognizer in gestures {
+                    if recognizer is UIPinchGestureRecognizer ||
+                       recognizer is UILongPressGestureRecognizer ||
+                       recognizer is UITapGestureRecognizer {
+                        recognizer.isEnabled = false
+                        recognizer.cancelsTouchesInView = true
+                        scrollView.removeGestureRecognizer(recognizer)
+                    }
                 }
             }
+            
+            // メニューを強制的に非表示
+            UIMenuController.shared.hideMenu()
+            
+            // 非同期でもう一度設定を無効化
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                scrollView.pinchGestureRecognizer?.isEnabled = false
+                scrollView.zoomScale = 1.0
+                scrollView.minimumZoomScale = 1.0
+                scrollView.maximumZoomScale = 1.0
+                UIMenuController.shared.hideMenu()
+            }
+        }
+        
+        // テキストビューの選択を解除
+        if let textView = self.textView {
+            textView.selectedRange = NSRange(location: textView.selectedRange.location, length: 0)
         }
     }
     
@@ -596,20 +691,28 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
 }
 
 // MARK: - UITextViewDelegate
-// MARK: - UITextViewDelegate
 extension EditPhotoViewController: UITextViewDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
         isEditingText = true
+        disableAllZoomFunctionality()
         
         // プレースホルダーテキストを削除
         if textView.text == "テキストを入力" {
             textView.text = ""
             textView.textColor = UIColor.black
         }
+        
+        // 選択を解除
+        if let textView = textView as? NoMenuTextView {
+            textView.selectedRange = NSRange(location: textView.selectedRange.location, length: 0)
+            textView.selectedTextRange = nil
+        }
+        UIMenuController.shared.hideMenu()
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
         isEditingText = false
+        UIMenuController.shared.hideMenu()
         
         // 空の場合はプレースホルダーを表示
         if textView.text.isEmpty {
@@ -618,6 +721,8 @@ extension EditPhotoViewController: UITextViewDelegate {
         }
     }
     
+
+    
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         // Returnキーで編集終了
         if text == "\n" {
@@ -625,6 +730,58 @@ extension EditPhotoViewController: UITextViewDelegate {
             return false
         }
         return true
+    }
+    
+    // テキスト選択を無効化
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+        // 選択を解除してメニュー表示を防止
+        textView.selectedTextRange = nil
+        
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
+        
+        // ズーム機能を無効化
+        disableAllZoomFunctionality()
+        
+        return true
+    }
+    
+    // テキスト選択時の処理
+    func textViewDidChangeSelection(_ textView: UITextView) {
+        // すべての選択を即座に解除
+        if let noMenuTextView = textView as? NoMenuTextView {
+            // 選択があれば解除
+            if noMenuTextView.selectedRange.length > 0 {
+                // カーソル位置を保持しつつ選択を解除
+                let cursorPosition = noMenuTextView.selectedRange.location + noMenuTextView.selectedRange.length
+                noMenuTextView.selectedRange = NSRange(location: cursorPosition, length: 0)
+            }
+            
+            // メニューを強制的に非表示にする
+            UIMenuController.shared.hideMenu()
+            
+            // 非同期でもう一度メニューを非表示にする
+            DispatchQueue.main.async {
+                UIMenuController.shared.hideMenu()
+            }
+            
+            // さらに別のタイミングでもメニューを非表示にする
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                UIMenuController.shared.hideMenu()
+                if noMenuTextView.selectedRange.length > 0 {
+                    let cursorPosition = noMenuTextView.selectedRange.location + noMenuTextView.selectedRange.length
+                    noMenuTextView.selectedRange = NSRange(location: cursorPosition, length: 0)
+                }
+            }
+            
+            // さらに別のタイミングでもメニューを非表示にする
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                UIMenuController.shared.hideMenu()
+            }
+            
+            // ズーム機能も無効化
+            self.disableAllZoomFunctionality()
+        }
     }
 }
 
