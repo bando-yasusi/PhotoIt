@@ -37,6 +37,9 @@ class NoMenuTextView: UITextView {
         inputAssistantItem.leadingBarButtonGroups = [] // 上部バー（ペーストなど）を非表示
         inputAssistantItem.trailingBarButtonGroups = []
         
+        // カーソル選択を抑止
+        selectedTextRange = nil
+        
         // ドラッグアンドドロップを無効化
         textDragInteraction?.isEnabled = false
         
@@ -48,10 +51,14 @@ class NoMenuTextView: UITextView {
         // すべてのジェスチャー認識機を無効化
         if let gestures = gestureRecognizers {
             for gesture in gestures {
+                // すべてのジェスチャーを無効化
                 gesture.isEnabled = false
                 removeGestureRecognizer(gesture)
             }
         }
+        
+        // メニューを非表示
+        UIMenuController.shared.hideMenu()
         
         // メニュー表示通知を監視
         NotificationCenter.default.addObserver(self,
@@ -64,11 +71,7 @@ class NoMenuTextView: UITextView {
                                                name: UIMenuController.didShowMenuNotification,
                                                object: nil)
         
-        // テキスト選択通知を監視
-        NotificationCenter.default.addObserver(self,
-                                              selector: #selector(textDidChangeSelection),
-                                              name: UITextView.didChangeSelectionNotification,
-                                              object: self)
+        // テキスト選択はデリゲートメソッドで処理するので、ここでの通知監視は不要
     }
     
     deinit {
@@ -111,14 +114,26 @@ class NoMenuTextView: UITextView {
         }
     }
     
-    // テキスト選択変更時に選択を解除
-    @objc private func textDidChangeSelection(_ notification: Notification) {
-        // 長い選択があれば解除
-        if selectedRange.length > 0 {
-            let cursorPosition = selectedRange.location + selectedRange.length
-            selectedRange = NSRange(location: cursorPosition, length: 0)
-            UIMenuController.shared.hideMenu()
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        // 念のため再確認
+        self.gestureRecognizers?.forEach { recognizer in
+            // すべてのジェスチャーを無効化
+            recognizer.isEnabled = false
+            self.removeGestureRecognizer(recognizer)
         }
+        
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
+    }
+    
+    override func becomeFirstResponder() -> Bool {
+        let result = super.becomeFirstResponder()
+        self.selectedRange = NSRange(location: self.text.count, length: 0)
+        self.selectedTextRange = nil
+        // メニューを強制的に非表示
+        UIMenuController.shared.hideMenu()
+        return result
     }
     
     // 選択範囲の表示を無効化
@@ -147,7 +162,7 @@ class NoMenuTextView: UITextView {
         UIMenuController.shared.hideMenu()
     }
     
-    // ジェスチャー認識を無効化
+    // すべてのジェスチャー認識機を無効化
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         return false
     }
@@ -248,6 +263,7 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         stickyImageView.image = UIImage(named: "arrow_left_yellow")
         stickyImageView.contentMode = .scaleAspectFit
         stickyImageView.isUserInteractionEnabled = false
+        stickyNote.addSubview(stickyImageView) // 付箋に画像ビューを追加
         
         // テキストビューを作成
         let textViewFrame = CGRect(
@@ -264,7 +280,17 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         textView.font = UIFont.systemFont(ofSize: 19)
         textView.textColor = .black
         textView.textAlignment = .left
+        textView.text = "テキストを入力"
+        textView.textColor = UIColor.lightGray
+        
+        // テキストビューの内部余白を設定
+        textView.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        textView.textContainer.lineFragmentPadding = 0
+        
         stickyNote.addSubview(textView)
+        
+        // 付箋をイメージビューに追加
+        imageView.addSubview(stickyNote)
         
         // ズーム機能を完全に無効化
         disableAllZoomFunctionality()
