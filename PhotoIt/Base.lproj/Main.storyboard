@@ -1,24 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="E3U-FA-MhN">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
-        <scene sceneID="tne-QT-ifu">
+        <!--MainViewController-->
+        <scene sceneID="umv-9d-CFW">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                <viewController title="MainViewController" id="E3U-FA-MhN" customClass="MainViewController" customModule="PhotoIt" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="FDn-0w-YLm">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LJR-HH-KgC">
+                                <rect key="frame" x="30" y="653" width="333" height="40"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Take a photo" backgroundImage="setting"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2JF-Kf-lHk">
+                                <rect key="frame" x="30" y="573" width="333" height="40"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Select an image" backgroundImage="setting"/>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="xvb-3j-4nS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="xvb-3j-4nS" firstAttribute="trailing" secondItem="LJR-HH-KgC" secondAttribute="trailing" constant="30" id="4hv-8u-Yba"/>
+                            <constraint firstItem="LJR-HH-KgC" firstAttribute="leading" secondItem="xvb-3j-4nS" secondAttribute="leading" constant="30" id="7QX-GO-QUz"/>
+                            <constraint firstItem="2JF-Kf-lHk" firstAttribute="centerX" secondItem="FDn-0w-YLm" secondAttribute="centerX" id="LRY-Pk-svm"/>
+                            <constraint firstItem="xvb-3j-4nS" firstAttribute="trailing" secondItem="2JF-Kf-lHk" secondAttribute="trailing" constant="30" id="NOZ-5s-Twy"/>
+                            <constraint firstItem="LJR-HH-KgC" firstAttribute="top" secondItem="2JF-Kf-lHk" secondAttribute="bottom" constant="40" id="aQ6-M1-gsp"/>
+                            <constraint firstItem="2JF-Kf-lHk" firstAttribute="leading" secondItem="xvb-3j-4nS" secondAttribute="leading" constant="30" id="cz8-8r-zkr"/>
+                            <constraint firstItem="xvb-3j-4nS" firstAttribute="bottom" secondItem="LJR-HH-KgC" secondAttribute="bottom" constant="125" id="d0R-uv-Dru"/>
+                            <constraint firstItem="LJR-HH-KgC" firstAttribute="centerX" secondItem="FDn-0w-YLm" secondAttribute="centerX" id="o9k-gt-TQJ"/>
+                        </constraints>
                     </view>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gNG-gG-kqb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="778" y="-35"/>
+        </scene>
+        <!--EditPhotoViewController-->
+        <scene sceneID="Bus-se-fTK">
+            <objects>
+                <viewController storyboardIdentifier="EditPhotoViewController" title="EditPhotoViewController" id="ck9-gZ-izM" customClass="EditPhotoViewController" customModule="PhotoIt" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qmy-iy-Gtc">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PQd-aS-dbO">
+                                <rect key="frame" x="30" y="64" width="80" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="chw-Fh-7tl"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="cancel" backgroundImage="setting"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uJs-EI-jc1">
+                                <rect key="frame" x="283" y="64" width="80" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="iqK-kw-vNj"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="save" backgroundImage="setting"/>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="26Y-zU-m9S"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="PQd-aS-dbO" firstAttribute="top" secondItem="26Y-zU-m9S" secondAttribute="top" constant="5" id="UUT-4z-mhS"/>
+                            <constraint firstItem="26Y-zU-m9S" firstAttribute="trailing" secondItem="uJs-EI-jc1" secondAttribute="trailing" constant="30" id="ViC-vc-Pa7"/>
+                            <constraint firstItem="PQd-aS-dbO" firstAttribute="leading" secondItem="26Y-zU-m9S" secondAttribute="leading" constant="30" id="smL-1r-MEA"/>
+                            <constraint firstItem="uJs-EI-jc1" firstAttribute="top" secondItem="26Y-zU-m9S" secondAttribute="top" constant="5" id="x7p-Ev-fu6"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UgL-fy-gga" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1480" y="-29"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="setting" width="300" height="40"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
 </document>
