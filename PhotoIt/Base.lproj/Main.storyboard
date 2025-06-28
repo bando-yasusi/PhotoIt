@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="E3U-FA-MhN">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1rb-WD-1GX">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
@@ -20,11 +20,17 @@
                                 <rect key="frame" x="30" y="653" width="333" height="40"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title="Take a photo" backgroundImage="setting"/>
+                                <connections>
+                                    <action selector="takePhotoButtonTapped:" destination="E3U-FA-MhN" eventType="touchUpInside" id="E1v-Bo-H6C"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2JF-Kf-lHk">
                                 <rect key="frame" x="30" y="573" width="333" height="40"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title="Select an image" backgroundImage="setting"/>
+                                <connections>
+                                    <action selector="selectPhotoButtonTapped:" destination="E3U-FA-MhN" eventType="touchUpInside" id="Azt-ym-iuM"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="xvb-3j-4nS"/>
@@ -40,10 +46,16 @@
                             <constraint firstItem="LJR-HH-KgC" firstAttribute="centerX" secondItem="FDn-0w-YLm" secondAttribute="centerX" id="o9k-gt-TQJ"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="51n-YX-2Tf"/>
+                    <connections>
+                        <outlet property="selectPhotoButton" destination="2JF-Kf-lHk" id="N4M-sx-NY9"/>
+                        <outlet property="takePhotoButton" destination="LJR-HH-KgC" id="RLs-ic-ehT"/>
+                        <segue destination="ck9-gZ-izM" kind="show" id="xjB-lU-1jI"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gNG-gG-kqb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="778" y="-35"/>
+            <point key="canvasLocation" x="1704.5801526717557" y="-35.211267605633807"/>
         </scene>
         <!--EditPhotoViewController-->
         <scene sceneID="Bus-se-fTK">
@@ -53,36 +65,73 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PQd-aS-dbO">
-                                <rect key="frame" x="30" y="64" width="80" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="80" id="chw-Fh-7tl"/>
-                                </constraints>
-                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                <state key="normal" title="cancel" backgroundImage="setting"/>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uJs-EI-jc1">
-                                <rect key="frame" x="283" y="64" width="80" height="40"/>
+                                <rect key="frame" x="283" y="123" width="80" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="80" id="iqK-kw-vNj"/>
                                 </constraints>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title="save" backgroundImage="setting"/>
+                                <connections>
+                                    <action selector="saveButtonTapped:" destination="ck9-gZ-izM" eventType="touchUpInside" id="UlM-5b-eJO"/>
+                                </connections>
+                            </button>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="30V-g5-dfg">
+                                <rect key="frame" x="0.0" y="168" width="393" height="346"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PQd-aS-dbO">
+                                <rect key="frame" x="183" y="123" width="80" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="chw-Fh-7tl"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="cancel" backgroundImage="setting"/>
+                                <connections>
+                                    <action selector="cancelButtonTapped:" destination="ck9-gZ-izM" eventType="touchUpInside" id="A3M-DI-i3P"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="26Y-zU-m9S"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="PQd-aS-dbO" firstAttribute="top" secondItem="26Y-zU-m9S" secondAttribute="top" constant="5" id="UUT-4z-mhS"/>
+                            <constraint firstItem="uJs-EI-jc1" firstAttribute="top" secondItem="26Y-zU-m9S" secondAttribute="top" constant="20" id="FQl-qQ-nto"/>
+                            <constraint firstItem="uJs-EI-jc1" firstAttribute="centerY" secondItem="PQd-aS-dbO" secondAttribute="centerY" id="OAc-1a-9dY"/>
+                            <constraint firstItem="26Y-zU-m9S" firstAttribute="bottom" secondItem="30V-g5-dfg" secondAttribute="bottom" constant="304" id="ONn-wz-nSu"/>
                             <constraint firstItem="26Y-zU-m9S" firstAttribute="trailing" secondItem="uJs-EI-jc1" secondAttribute="trailing" constant="30" id="ViC-vc-Pa7"/>
-                            <constraint firstItem="PQd-aS-dbO" firstAttribute="leading" secondItem="26Y-zU-m9S" secondAttribute="leading" constant="30" id="smL-1r-MEA"/>
-                            <constraint firstItem="uJs-EI-jc1" firstAttribute="top" secondItem="26Y-zU-m9S" secondAttribute="top" constant="5" id="x7p-Ev-fu6"/>
+                            <constraint firstItem="30V-g5-dfg" firstAttribute="trailing" secondItem="26Y-zU-m9S" secondAttribute="trailing" id="XsY-Fy-9op"/>
+                            <constraint firstItem="uJs-EI-jc1" firstAttribute="leading" secondItem="PQd-aS-dbO" secondAttribute="trailing" constant="20" id="Z9o-3W-yfS"/>
+                            <constraint firstItem="30V-g5-dfg" firstAttribute="leading" secondItem="26Y-zU-m9S" secondAttribute="leading" id="sAo-Fn-aho"/>
+                            <constraint firstItem="30V-g5-dfg" firstAttribute="top" secondItem="PQd-aS-dbO" secondAttribute="bottom" constant="5" id="y05-dt-3sx"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="dNi-y5-9vi"/>
+                    <connections>
+                        <outlet property="cancelButton" destination="PQd-aS-dbO" id="POB-rw-wUR"/>
+                        <outlet property="imageView" destination="30V-g5-dfg" id="6d8-lZ-jOm"/>
+                        <outlet property="saveButton" destination="uJs-EI-jc1" id="utP-IL-aoK"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UgL-fy-gga" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1480" y="-29"/>
+            <point key="canvasLocation" x="2405.3435114503814" y="-29.577464788732396"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="tKq-X8-XzO">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="1rb-WD-1GX" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="x8m-tA-bwX">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="E3U-FA-MhN" kind="relationship" relationship="rootViewController" id="c6f-lI-7d4"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="QgI-SS-zb3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="777.86259541984725" y="-35.211267605633807"/>
         </scene>
     </scenes>
     <resources>
