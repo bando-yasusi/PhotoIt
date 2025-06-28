@@ -39,13 +39,29 @@ class ArrowStickyNoteView: UIView, UIGestureRecognizerDelegate {
         return textView
     }()
     
-    let imageView: UIImageView = {
+    private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "arrow_left_yellow") // 付箋の画像名
-        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "arrow_left_yellow")
+        imageView.contentMode = .scaleToFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
+    
+    // MARK: - Text Orientation
+    
+    // テキストの向きを回転角度に応じて調整するメソッド
+    func adjustTextOrientation(for rotation: CGFloat) {
+        // 回転角度を度数法に変換（0〜360度）
+        let degrees = ((rotation * 180 / .pi) + 360).truncatingRemainder(dividingBy: 360)
+        
+        // 90〜270度の間（上下逆さま）の場合、テキストを180度回転
+        if (degrees > 90 && degrees < 270) {
+            textView.transform = CGAffineTransform(rotationAngle: .pi)
+        } else {
+            // それ以外は通常の向き
+            textView.transform = .identity
+        }
+    }
     
     // MARK: - Initialization
     override init(frame: CGRect) {
@@ -56,27 +72,6 @@ class ArrowStickyNoteView: UIView, UIGestureRecognizerDelegate {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
-    }
-    
-    // MARK: - UITextViewDelegate
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        delegate?.stickyNoteDidBeginEditing(self)
-        
-        // プレースホルダーテキストを削除
-        if textView.text == placeholderText {
-            textView.text = ""
-            textView.textColor = UIColor.black
-        }
-    }
-    
-    func textViewDidEndEditing(_ textView: UITextView) {
-        delegate?.stickyNoteDidEndEditing(self)
-        
-        // 空の場合はプレースホルダーを表示
-        if textView.text.isEmpty {
-            textView.text = placeholderText
-            textView.textColor = UIColor.lightGray
-        }
     }
     
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
@@ -123,25 +118,46 @@ class ArrowStickyNoteView: UIView, UIGestureRecognizerDelegate {
         addSubview(textView)
     }
     
-    // テキストの向きを調整するメソッド
+    // MARK: - Public Methods
     func adjustTextRotation(for rotation: CGFloat) {
-        // 付箋が上下逆さまになったとき（90度〜270度の間）にテキストを180度回転させる
-        let normalizedRotation = ((rotation * 180 / .pi) + 360).truncatingRemainder(dividingBy: 360)
+        // テキストは付箋と一緒に回転するため、基本的には何もしない
+        // 90度を超えると文字の向きを反転させる
+        let normalizedRotation = rotation.truncatingRemainder(dividingBy: 2 * .pi)
+        let absoluteRotation = abs(normalizedRotation)
         
-        if (normalizedRotation > 90 && normalizedRotation < 270) {
-            // 上下逆さまのとき、テキストを180度回転
+        // 90度〜270度の間は文字を180度回転させる
+        if (absoluteRotation > .pi/2 && absoluteRotation < 3 * .pi/2) {
             textView.transform = CGAffineTransform(rotationAngle: .pi)
         } else {
-            // 通常の向き
-            textView.transform = .identity
+            textView.transform = CGAffineTransform.identity
         }
     }
+    
 }
 
 // MARK: - UITextViewDelegate
 extension ArrowStickyNoteView: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        delegate?.stickyNoteDidBeginEditing(self)
+        
+        // プレースホルダーテキストの場合、クリアして通常のテキスト色に変更
+        if textView.text == placeholderText {
+            textView.text = ""
+            textView.textColor = UIColor.black
+        }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        delegate?.stickyNoteDidEndEditing(self)
+        
+        // テキストが空の場合、プレースホルダーを表示
+        if textView.text.isEmpty {
+            textView.text = placeholderText
+            textView.textColor = UIColor.lightGray
+        }
+    }
+    
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        // Returnキーで編集終了
         if text == "\n" {
             textView.resignFirstResponder()
             return false
@@ -149,3 +165,4 @@ extension ArrowStickyNoteView: UITextViewDelegate {
         return true
     }
 }
+
