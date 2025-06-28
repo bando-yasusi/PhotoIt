@@ -1,7 +1,7 @@
 import UIKit
 import PDFKit
 
-class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
+class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate {
     
     // MARK: - IBOutlets
     @IBOutlet weak var imageView: UIImageView!
@@ -10,7 +10,9 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
     
     // MARK: - Properties
     var selectedImage: UIImage?
-    private var stickyNote: ArrowStickyNoteView!
+    private var stickyNote: UIView!
+    private var stickyImageView: UIImageView!
+    private var textView: UITextView!
     private var isEditingText = false
     
     // MARK: - Lifecycle
@@ -24,7 +26,7 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
         super.viewDidLayoutSubviews()
         
         // レイアウト完了後に付箋の位置を調整
-        if stickyNote != nil && stickyNote.superview == nil {
+        if stickyNote == nil || stickyNote.superview == nil {
             setupStickyNote()
         }
     }
@@ -36,7 +38,7 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
             // テキストビューを編集可能にする
-            self.stickyNote.textView.becomeFirstResponder()
+            self.textView.becomeFirstResponder()
         }
     }
     
@@ -51,18 +53,7 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
         // 画像を表示
         imageView.image = selectedImage
         imageView.contentMode = .scaleAspectFit
-        
-        // ボタンのスタイル設定
-        saveButton.layer.cornerRadius = 10
-        saveButton.backgroundColor = UIColor.systemBlue
-        saveButton.setTitleColor(.white, for: .normal)
-        
-        cancelButton.layer.cornerRadius = 10
-        cancelButton.backgroundColor = UIColor.systemRed
-        cancelButton.setTitleColor(.white, for: .normal)
-        
-        // 付箋を追加
-        setupStickyNote()
+        imageView.isUserInteractionEnabled = true // ジェスチャー認識のために必須
     }
     
     // 付箋のセットアップ
@@ -76,18 +67,47 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
             height: stickyNoteSize.height
         )
         
-        // 付箋を作成
-        stickyNote = ArrowStickyNoteView(frame: stickyNoteFrame)
-        stickyNote.text = "テキストを入力"
-        stickyNote.delegate = self
+        // 付箋のベースビューを作成
+        stickyNote = UIView(frame: stickyNoteFrame)
+        stickyNote.isUserInteractionEnabled = true
+        
+        // 付箋の画像ビューを作成
+        stickyImageView = UIImageView(frame: stickyNote.bounds)
+        stickyImageView.image = UIImage(named: "arrow_left_yellow")
+        stickyImageView.contentMode = .scaleAspectFit
+        stickyImageView.isUserInteractionEnabled = false
+        stickyNote.addSubview(stickyImageView)
+        
+        // テキストビューを作成
+        let padding: CGFloat = 10
+        textView = UITextView(frame: stickyNote.bounds.insetBy(dx: padding, dy: padding))
+        textView.backgroundColor = .clear
+        textView.font = UIFont.systemFont(ofSize: 14)
+        textView.textAlignment = .center
+        textView.textColor = .lightGray
+        textView.text = "テキストを入力"
+        textView.delegate = self
+        textView.returnKeyType = .done
+        textView.isScrollEnabled = false
+        stickyNote.addSubview(textView)
         
         // 移動用のパンジェスチャーを追加
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        panGesture.delegate = self
+        panGesture.cancelsTouchesInView = false  // タッチイベントをキャンセルしない
         stickyNote.addGestureRecognizer(panGesture)
         
         // 回転用のジェスチャーを追加
         let rotationGesture = UIRotationGestureRecognizer(target: self, action: #selector(handleRotationGesture(_:)))
+        rotationGesture.delegate = self
+        rotationGesture.cancelsTouchesInView = false  // タッチイベントをキャンセルしない
         stickyNote.addGestureRecognizer(rotationGesture)
+        
+        // タップジェスチャーを追加（テキスト編集のため）
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture(_:)))
+        tapGesture.delegate = self
+        tapGesture.cancelsTouchesInView = false
+        stickyNote.addGestureRecognizer(tapGesture)
         
         // 画像ビューに付箋を追加
         imageView.addSubview(stickyNote)
@@ -112,44 +132,45 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
     
     @objc private func keyboardWillShow(notification: NSNotification) {
         if isEditingText, let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-            let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
-            
             // コンテンツを上にスクロールしてキーボードに隠れないようにする
             var viewFrame = view.frame
             viewFrame.size.height -= keyboardSize.height
             
             if stickyNote != nil {
                 let stickyNoteFrame = stickyNote.convert(stickyNote.bounds, to: view)
-                if !viewFrame.contains(stickyNoteFrame) {
-                    UIView.animate(withDuration: 0.3) {
-                        self.view.frame.origin.y -= keyboardSize.height / 2
-                    }
+                
+                // 付箋がキーボードに隠れる場合は、スクロールして表示する
+                if stickyNoteFrame.maxY > viewFrame.height {
+                    let yOffset = stickyNoteFrame.maxY - viewFrame.height + 20 // 20pxの余白
+                    imageView.transform = CGAffineTransform(translationX: 0, y: -yOffset)
                 }
             }
         }
     }
     
     @objc private func keyboardWillHide(notification: NSNotification) {
-        if isEditingText {
-            UIView.animate(withDuration: 0.3) {
-                self.view.frame.origin.y = 0
-            }
-        }
+        // キーボードが隠れたら元の位置に戻す
+        imageView.transform = .identity
     }
     
-    // MARK: - IBActions
-    @IBAction func saveButtonTapped(_ sender: UIButton) {
-        generateAndSavePDF()
-    }
-    
+    // MARK: - Actions
     @IBAction func cancelButtonTapped(_ sender: UIButton) {
         navigationController?.popViewController(animated: true)
     }
     
+    @IBAction func saveButtonTapped(_ sender: UIButton) {
+        // キーボードを閉じる
+        view.endEditing(true)
+        
+        // PDFを生成して共有
+        generateAndSavePDF()
+    }
+    
     // MARK: - Gesture Handlers
     @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
-        guard let stickyView = gesture.view as? ArrowStickyNoteView, stickyView == stickyNote else { return }
+        guard let stickyView = gesture.view, stickyView == stickyNote else { return }
         
+        // 常に移動できるようにする
         let translation = gesture.translation(in: imageView)
         stickyView.center = CGPoint(
             x: stickyView.center.x + translation.x,
@@ -158,26 +179,57 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
         gesture.setTranslation(.zero, in: imageView)
     }
     
+    @objc private func handleTapGesture(_ gesture: UITapGestureRecognizer) {
+        // タップしたときにテキストビューにフォーカスを当てる
+        if !textView.isFirstResponder {
+            textView.becomeFirstResponder()
+        }
+    }
+    
     @objc private func handleRotationGesture(_ gesture: UIRotationGestureRecognizer) {
-        guard let stickyView = gesture.view as? ArrowStickyNoteView, stickyView == stickyNote else { return }
+        guard let stickyView = gesture.view, stickyView == stickyNote else { return }
         
         if gesture.state == .changed {
             stickyView.transform = stickyView.transform.rotated(by: gesture.rotation)
             gesture.rotation = 0
             
             // テキストの向きを調整
-            let currentRotation = atan2(stickyView.transform.b, stickyView.transform.a)
-            stickyView.adjustTextRotation(for: currentRotation)
+            adjustTextRotation()
         }
     }
     
-    // MARK: - ArrowStickyNoteViewDelegate
-    func stickyNoteDidBeginEditing(_ stickyNote: ArrowStickyNoteView) {
-        isEditingText = true
+    // テキストの向きを調整
+    private func adjustTextRotation() {
+        let currentRotation = atan2(stickyNote.transform.b, stickyNote.transform.a)
+        let normalizedRotation = ((currentRotation * 180 / .pi) + 360).truncatingRemainder(dividingBy: 360)
+        
+        if (normalizedRotation > 90 && normalizedRotation < 270) {
+            // 上下逆さまのとき、テキストを180度回転
+            textView.transform = CGAffineTransform(rotationAngle: .pi)
+        } else {
+            // 通常の向き
+            textView.transform = .identity
+        }
     }
     
-    func stickyNoteDidEndEditing(_ stickyNote: ArrowStickyNoteView) {
-        isEditingText = false
+    // MARK: - UIGestureRecognizerDelegate
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // パンジェスチャーとローテーションジェスチャーは常に受け付ける
+        if gestureRecognizer is UIPanGestureRecognizer || gestureRecognizer is UIRotationGestureRecognizer {
+            return true
+        }
+        
+        // タップジェスチャーの場合、テキストビューが編集中なら無視
+        if gestureRecognizer is UITapGestureRecognizer && textView.isFirstResponder {
+            return false
+        }
+        
+        return true
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        // 複数のジェスチャーを同時に認識できるようにする
+        return true
     }
     
     // MARK: - PDF Generation
@@ -198,59 +250,48 @@ class EditPhotoViewController: UIViewController, ArrowStickyNoteViewDelegate {
         UIGraphicsBeginPDFContextToData(pdfData, pdfPageBounds, nil)
         UIGraphicsBeginPDFPage()
         
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
+        capturedImage.draw(in: pdfPageBounds)
         
-        // PDFに画像を描画
-        context.translateBy(x: 0, y: pdfPageBounds.height)
-        context.scaleBy(x: 1.0, y: -1.0)
-        context.draw(capturedImage.cgImage!, in: pdfPageBounds)
-        
-        context.restoreGState()
         UIGraphicsEndPDFContext()
         
-        // PDFを保存または共有
-        showShareSheet(with: pdfData as Data)
+        // 一時ファイルとしてPDFを保存
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("photo_with_notes.pdf")
+        try? pdfData.write(to: tempURL)
+        
+        // 共有シートを表示
+        let activityViewController = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+        present(activityViewController, animated: true)
+    }
+}
+
+// MARK: - UITextViewDelegate
+extension EditPhotoViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        isEditingText = true
+        
+        // プレースホルダーテキストを削除
+        if textView.text == "テキストを入力" {
+            textView.text = ""
+            textView.textColor = UIColor.black
+        }
     }
     
-    private func showShareSheet(with pdfData: Data) {
-        // 一時ファイルとしてPDFを保存
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileName = "PhotoIt_\(Date().timeIntervalSince1970).pdf"
-        let fileURL = tempDir.appendingPathComponent(fileName)
+    func textViewDidEndEditing(_ textView: UITextView) {
+        isEditingText = false
         
-        do {
-            try pdfData.write(to: fileURL)
-            
-            // 共有シートを表示
-            let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
-            activityVC.completionWithItemsHandler = { _, completed, _, _ in
-                if completed {
-                    // 保存成功のアラートを表示
-                    let alert = UIAlertController(
-                        title: "保存完了",
-                        message: "PDFが正常に保存されました",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                        self.navigationController?.popViewController(animated: true)
-                    })
-                    self.present(alert, animated: true)
-                }
-            }
-            
-            present(activityVC, animated: true)
-        } catch {
-            print("PDFの保存に失敗しました: \(error)")
-            
-            // エラーアラートを表示
-            let alert = UIAlertController(
-                title: "エラー",
-                message: "PDFの保存に失敗しました",
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+        // 空の場合はプレースホルダーを表示
+        if textView.text.isEmpty {
+            textView.text = "テキストを入力"
+            textView.textColor = UIColor.lightGray
         }
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        // Returnキーで編集終了
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
     }
 }

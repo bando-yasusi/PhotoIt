@@ -50,7 +50,6 @@
                     <connections>
                         <outlet property="selectPhotoButton" destination="2JF-Kf-lHk" id="N4M-sx-NY9"/>
                         <outlet property="takePhotoButton" destination="LJR-HH-KgC" id="RLs-ic-ehT"/>
-                        <segue destination="ck9-gZ-izM" kind="show" id="xjB-lU-1jI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gNG-gG-kqb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

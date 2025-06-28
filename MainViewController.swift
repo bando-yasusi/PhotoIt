@@ -44,14 +44,17 @@ class MainViewController: UIViewController {
             presentCamera()
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                if granted {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if granted {
                         self?.presentCamera()
                     }
                 }
             }
         case .denied, .restricted:
-            showPermissionAlert(for: "カメラ")
+            showPermissionAlert(
+                title: "カメラへのアクセスが拒否されています",
+                message: "設定アプリからカメラへのアクセスを許可してください"
+            )
         @unknown default:
             break
         }
@@ -59,33 +62,32 @@ class MainViewController: UIViewController {
     
     private func checkPhotoLibraryPermission() {
         switch PHPhotoLibrary.authorizationStatus() {
-        case .authorized:
+        case .authorized, .limited:
             presentPhotoLibrary()
         case .notDetermined:
             PHPhotoLibrary.requestAuthorization { [weak self] status in
-                if status == .authorized {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if status == .authorized || status == .limited {
                         self?.presentPhotoLibrary()
                     }
                 }
             }
-        case .denied, .restricted, .limited:
-            showPermissionAlert(for: "フォトライブラリ")
+        case .denied, .restricted:
+            showPermissionAlert(
+                title: "フォトライブラリへのアクセスが拒否されています",
+                message: "設定アプリからフォトライブラリへのアクセスを許可してください"
+            )
         @unknown default:
             break
         }
     }
     
-    private func showPermissionAlert(for type: String) {
-        let alert = UIAlertController(
-            title: "\(type)へのアクセスが拒否されています",
-            message: "設定アプリから\(type)へのアクセスを許可してください",
-            preferredStyle: .alert
-        )
+    private func showPermissionAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "設定を開く", style: .default) { _ in
-            if let url = URL(string: UIApplication.openSettingsURLString) {
-                UIApplication.shared.open(url)
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
             }
         })
         
@@ -97,19 +99,29 @@ class MainViewController: UIViewController {
     // MARK: - Camera & Photo Library
     private func presentCamera() {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let picker = UIImagePickerController()
-            picker.sourceType = .camera
-            picker.delegate = self
-            present(picker, animated: true)
+            let imagePicker = UIImagePickerController()
+            imagePicker.delegate = self
+            imagePicker.sourceType = .camera
+            imagePicker.allowsEditing = false
+            present(imagePicker, animated: true)
+        } else {
+            let alert = UIAlertController(
+                title: "カメラが利用できません",
+                message: "このデバイスではカメラが使用できません",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
         }
     }
     
     private func presentPhotoLibrary() {
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            let picker = UIImagePickerController()
-            picker.sourceType = .photoLibrary
-            picker.delegate = self
-            present(picker, animated: true)
+            let imagePicker = UIImagePickerController()
+            imagePicker.delegate = self
+            imagePicker.sourceType = .photoLibrary
+            imagePicker.allowsEditing = false
+            present(imagePicker, animated: true)
         }
     }
 }
@@ -121,6 +133,7 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true)
         
         if let image = info[.originalImage] as? UIImage {
+            // NavigationControllerを使用して編集画面に遷移
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             if let editVC = storyboard.instantiateViewController(withIdentifier: "EditPhotoViewController") as? EditPhotoViewController {
                 editVC.selectedImage = image
