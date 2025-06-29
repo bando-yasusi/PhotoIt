@@ -152,7 +152,6 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     // MARK: - IBOutlets
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var saveButton: UIButton!
-    @IBOutlet weak var cancelButton: UIButton!
     
     // MARK: - Properties
     var selectedImage: UIImage?
@@ -188,8 +187,13 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
             self.textView.textColor = UIColor.black
             
             // テキストビューを編集可能にする
-            self.textView.becomeFirstResponder()
-            self.isEditingText = true
+            if self.textView.becomeFirstResponder() {
+                self.isEditingText = true
+            } else {
+                print("テキストビューがファーストレスポンダーになれませんでした")
+                // 失敗時でもテキスト編集モードにする
+                self.isEditingText = true
+            }
         }
     }
     
@@ -383,10 +387,6 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     }
     
     // MARK: - Actions
-    @IBAction func cancelButtonTapped(_ sender: UIButton) {
-        navigationController?.popViewController(animated: true)
-    }
-    
     @IBAction func saveButtonTapped(_ sender: UIButton) {
         // キーボードを閉じる
         view.endEditing(true)
@@ -471,12 +471,10 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         disableAllZoomFunctionality()
         
         // テキストビューをファーストレスポンダーにする
-        textView.becomeFirstResponder()
+        let _ = textView.becomeFirstResponder() // 戻り値を使用しないことを明示
         
         // テキスト選択を解除
-        if let noMenuTextView = textView as? NoMenuTextView {
-            noMenuTextView.selectedRange = NSRange(location: noMenuTextView.selectedRange.location, length: 0)
-        }
+        textView.selectedRange = NSRange(location: textView.selectedRange.location, length: 0)
         
         // 非同期でもう一度メニューを非表示にする
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
