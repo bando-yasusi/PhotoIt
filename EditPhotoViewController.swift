@@ -599,6 +599,7 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         imageView.drawHierarchy(in: imageView.bounds, afterScreenUpdates: true)
         guard let capturedImage = UIGraphicsGetImageFromCurrentImageContext() else {
             UIGraphicsEndImageContext()
+            showErrorMessage("画像のキャプチャに失敗しました")
             return
         }
         UIGraphicsEndImageContext()
@@ -614,13 +615,125 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         
         UIGraphicsEndPDFContext()
         
-        // 一時ファイルとしてPDFを保存
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("photo_with_notes.pdf")
-        try? pdfData.write(to: tempURL)
+        // PhotoItフォルダに保存
+        saveToPhotoItFolder(pdfData: pdfData as Data)
+    }
+    
+    // PhotoItフォルダへの保存処理
+    private func saveToPhotoItFolder(pdfData: Data) {
+        // フォルダ作成（存在しない場合）
+        guard let photoItFolder = createPhotoItFolderIfNeeded() else {
+            showErrorMessage("保存先フォルダの作成に失敗しました")
+            return
+        }
         
-        // 共有シートを表示
-        let activityViewController = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
-        present(activityViewController, animated: true)
+        // ユニークなファイル名生成
+        let fileName = generateUniqueFileName(in: photoItFolder)
+        let fileURL = photoItFolder.appendingPathComponent(fileName)
+        
+        // ファイル保存
+        do {
+            try pdfData.write(to: fileURL)
+            showSuccessMessage("保存完了：ファイルアプリのPhotoItフォルダに保存しました")
+            
+            // オプション：ファイルを開くボタンを表示
+            showOpenFileOption(fileURL: fileURL)
+        } catch {
+            showErrorMessage("保存に失敗しました：\(error.localizedDescription)")
+        }
+    }
+    
+    // PhotoItフォルダの作成（存在しない場合）
+    private func createPhotoItFolderIfNeeded() -> URL? {
+        let fileManager = FileManager.default
+        
+        // ドキュメントディレクトリを取得
+        guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        
+        // PhotoItフォルダのパスを作成
+        let photoItFolder = documentsDirectory.appendingPathComponent("PhotoIt")
+        
+        // フォルダが存在しない場合は作成
+        if !fileManager.fileExists(atPath: photoItFolder.path) {
+            do {
+                try fileManager.createDirectory(at: photoItFolder, withIntermediateDirectories: true, attributes: nil)
+                print("PhotoItフォルダを作成しました: \(photoItFolder.path)")
+            } catch {
+                print("フォルダ作成エラー: \(error)")
+                return nil
+            }
+        } else {
+            print("PhotoItフォルダは既に存在します: \(photoItFolder.path)")
+        }
+        
+        return photoItFolder
+    }
+    
+    // ユニークなファイル名の生成
+    private func generateUniqueFileName(in folder: URL) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let dateString = dateFormatter.string(from: Date())
+        
+        // 連番の確認と生成
+        var counter = 1
+        var fileName = "PhotoIt_\(dateString)_\(String(format: "%03d", counter)).pdf"
+        
+        // 同名ファイルがある場合は連番を増やす
+        while FileManager.default.fileExists(atPath: folder.appendingPathComponent(fileName).path) {
+            counter += 1
+            fileName = "PhotoIt_\(dateString)_\(String(format: "%03d", counter)).pdf"
+        }
+        
+        return fileName
+    }
+    
+    // 成功メッセージの表示
+    private func showSuccessMessage(_ message: String) {
+        let alert = UIAlertController(title: "成功", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    // エラーメッセージの表示
+    private func showErrorMessage(_ message: String) {
+        let alert = UIAlertController(title: "エラー", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    // ファイルを開くオプションを表示
+    private func showOpenFileOption(fileURL: URL) {
+        // ファイル名を取得
+        let fileName = fileURL.lastPathComponent
+        
+        let message = """
+        PDFを保存しました：\(fileName)
+        
+        ファイルは「ファイル」アプリで確認できます：
+        1. 「ファイル」アプリを開く
+        2. 「この iPhone 内」をタップ
+        3. 「オンマイデバイス」→「PhotoIt」フォルダを開く
+        """
+        
+        let alert = UIAlertController(title: "保存完了", message: message, preferredStyle: .alert)
+        
+        // ファイルを開くボタン
+        alert.addAction(UIAlertAction(title: "ファイルを開く", style: .default) { _ in
+            UIApplication.shared.open(fileURL)
+        })
+        
+        // ファイルを共有するボタン
+        alert.addAction(UIAlertAction(title: "共有する", style: .default) { [weak self] _ in
+            // 共有シートを表示
+            let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            self?.present(activityViewController, animated: true)
+        })
+        
+        alert.addAction(UIAlertAction(title: "閉じる", style: .cancel))
+        present(alert, animated: true)
     }
 
 }

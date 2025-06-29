@@ -8,6 +8,10 @@
     <string>写真を選択するためにフォトライブラリへのアクセスが必要です。付箋を追加する写真を選択します。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>編集した写真をフォトライブラリに保存するためのアクセスが必要です。付箋を追加した写真やPDFを保存します。</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>
