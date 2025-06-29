@@ -649,8 +649,11 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         
         // ドキュメントディレクトリを取得
         guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("ドキュメントディレクトリの取得に失敗しました")
             return nil
         }
+        
+        print("ドキュメントディレクトリ: \(documentsDirectory.path)")
         
         // PhotoItフォルダのパスを作成
         let photoItFolder = documentsDirectory.appendingPathComponent("PhotoIt")
@@ -658,14 +661,30 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         // フォルダが存在しない場合は作成
         if !fileManager.fileExists(atPath: photoItFolder.path) {
             do {
+                // 中間ディレクトリも含めて作成
                 try fileManager.createDirectory(at: photoItFolder, withIntermediateDirectories: true, attributes: nil)
                 print("PhotoItフォルダを作成しました: \(photoItFolder.path)")
+                
+                // フォルダにダミーファイルを作成して、ファイルアプリで表示されるようにする
+                let dummyFilePath = photoItFolder.appendingPathComponent(".dummy")
+                if !fileManager.fileExists(atPath: dummyFilePath.path) {
+                    try "PhotoIt Folder".write(to: dummyFilePath, atomically: true, encoding: .utf8)
+                }
+                
+                // ファイルシステムの更新を待機
+                Thread.sleep(forTimeInterval: 0.1)
             } catch {
                 print("フォルダ作成エラー: \(error)")
                 return nil
             }
         } else {
             print("PhotoItフォルダは既に存在します: \(photoItFolder.path)")
+        }
+        
+        // 作成したフォルダが実際に存在することを確認
+        guard fileManager.fileExists(atPath: photoItFolder.path) else {
+            print("フォルダが作成されたはずなのに存在しません: \(photoItFolder.path)")
+            return nil
         }
         
         return photoItFolder
@@ -690,9 +709,13 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         return fileName
     }
     
-    // 成功メッセージの表示
+    // 成功メッセージを表示
     private func showSuccessMessage(_ message: String) {
-        let alert = UIAlertController(title: "成功", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "保存完了",
+            message: message + "\n\nファイルアプリを開き、「このiPhone内」>「PhotoIt」フォルダで確認できます。",
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
@@ -715,25 +738,34 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         ファイルは「ファイル」アプリで確認できます：
         1. 「ファイル」アプリを開く
         2. 「この iPhone 内」をタップ
-        3. 「オンマイデバイス」→「PhotoIt」フォルダを開く
+        3. 「PhotoIt」フォルダを開く
         """
         
-        let alert = UIAlertController(title: "保存完了", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "ファイルを開く",
+            message: message,
+            preferredStyle: .alert
+        )
         
-        // ファイルを開くボタン
-        alert.addAction(UIAlertAction(title: "ファイルを開く", style: .default) { _ in
-            UIApplication.shared.open(fileURL)
+        alert.addAction(UIAlertAction(title: "開く", style: .default) { _ in
+            // ファイルを開く
+            let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            self.present(activityVC, animated: true)
         })
         
-        // ファイルを共有するボタン
-        alert.addAction(UIAlertAction(title: "共有する", style: .default) { [weak self] _ in
-            // 共有シートを表示
-            let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
-            self?.present(activityViewController, animated: true)
+        alert.addAction(UIAlertAction(title: "ファイルアプリで見る", style: .default) { _ in
+            // ファイルアプリを開く
+            if let fileApp = URL(string: "shareddocuments://") {
+                UIApplication.shared.open(fileApp)
+            }
         })
         
-        alert.addAction(UIAlertAction(title: "閉じる", style: .cancel))
-        present(alert, animated: true)
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        
+        // 最初のアラートが閉じた後に表示
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.present(alert, animated: true)
+        }
     }
 
 }

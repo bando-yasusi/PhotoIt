@@ -44,17 +44,14 @@ class MainViewController: UIViewController {
             presentCamera()
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                DispatchQueue.main.async {
-                    if granted {
+                if granted {
+                    DispatchQueue.main.async {
                         self?.presentCamera()
                     }
                 }
             }
         case .denied, .restricted:
-            showPermissionAlert(
-                title: "カメラへのアクセスが拒否されています",
-                message: "設定アプリからカメラへのアクセスを許可してください"
-            )
+            showPermissionAlert(for: "カメラ")
         @unknown default:
             break
         }
@@ -62,32 +59,33 @@ class MainViewController: UIViewController {
     
     private func checkPhotoLibraryPermission() {
         switch PHPhotoLibrary.authorizationStatus() {
-        case .authorized, .limited:
+        case .authorized:
             presentPhotoLibrary()
         case .notDetermined:
             PHPhotoLibrary.requestAuthorization { [weak self] status in
-                DispatchQueue.main.async {
-                    if status == .authorized || status == .limited {
+                if status == .authorized {
+                    DispatchQueue.main.async {
                         self?.presentPhotoLibrary()
                     }
                 }
             }
-        case .denied, .restricted:
-            showPermissionAlert(
-                title: "フォトライブラリへのアクセスが拒否されています",
-                message: "設定アプリからフォトライブラリへのアクセスを許可してください"
-            )
+        case .denied, .restricted, .limited:
+            showPermissionAlert(for: "フォトライブラリ")
         @unknown default:
             break
         }
     }
     
-    private func showPermissionAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    private func showPermissionAlert(for type: String) {
+        let alert = UIAlertController(
+            title: "\(type)へのアクセスが拒否されています",
+            message: "設定アプリから\(type)へのアクセスを許可してください",
+            preferredStyle: .alert
+        )
         
         alert.addAction(UIAlertAction(title: "設定を開く", style: .default) { _ in
-            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                UIApplication.shared.open(settingsURL)
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
             }
         })
         
@@ -99,29 +97,19 @@ class MainViewController: UIViewController {
     // MARK: - Camera & Photo Library
     private func presentCamera() {
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let imagePicker = UIImagePickerController()
-            imagePicker.delegate = self
-            imagePicker.sourceType = .camera
-            imagePicker.allowsEditing = false
-            present(imagePicker, animated: true)
-        } else {
-            let alert = UIAlertController(
-                title: "カメラが利用できません",
-                message: "このデバイスではカメラが使用できません",
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+            let picker = UIImagePickerController()
+            picker.sourceType = .camera
+            picker.delegate = self
+            present(picker, animated: true)
         }
     }
     
     private func presentPhotoLibrary() {
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            let imagePicker = UIImagePickerController()
-            imagePicker.delegate = self
-            imagePicker.sourceType = .photoLibrary
-            imagePicker.allowsEditing = false
-            present(imagePicker, animated: true)
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.delegate = self
+            present(picker, animated: true)
         }
     }
 }
@@ -146,3 +134,4 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true)
     }
 }
+
