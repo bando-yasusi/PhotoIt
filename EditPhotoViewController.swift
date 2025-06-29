@@ -201,11 +201,16 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        // 画面表示後、少し遅延させてからテキストビューにフォーカスを当てる
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        // 画面表示後、すぐにテキストビューにフォーカスを当てる
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            
+            // テキストの色を黒に設定
+            self.textView.textColor = UIColor.black
+            
             // テキストビューを編集可能にする
             self.textView.becomeFirstResponder()
+            self.isEditingText = true
         }
     }
     
@@ -280,8 +285,7 @@ class EditPhotoViewController: UIViewController, UIGestureRecognizerDelegate, UI
         textView.font = UIFont.systemFont(ofSize: 19)
         textView.textColor = .black
         textView.textAlignment = .left
-        textView.text = "テキストを入力"
-        textView.textColor = UIColor.lightGray
+        textView.text = "" // 初期状態では空にする
         
         // テキストビューの内部余白を設定
         textView.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -722,11 +726,8 @@ extension EditPhotoViewController: UITextViewDelegate {
         isEditingText = true
         disableAllZoomFunctionality()
         
-        // プレースホルダーテキストを削除
-        if textView.text == "テキストを入力" {
-            textView.text = ""
-            textView.textColor = UIColor.black
-        }
+        // 入力テキストの色を必ず黒にする
+        textView.textColor = UIColor.black
         
         // 選択を解除
         if let textView = textView as? NoMenuTextView {
@@ -737,25 +738,80 @@ extension EditPhotoViewController: UITextViewDelegate {
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
-        isEditingText = false
+        // 編集終了時も編集状態を維持
+        isEditingText = true
         UIMenuController.shared.hideMenu()
         
-        // 空の場合はプレースホルダーを表示
-        if textView.text.isEmpty {
-            textView.text = "テキストを入力"
-            textView.textColor = UIColor.lightGray
+        // テキストの色を黒に設定
+        textView.textColor = UIColor.black
+        
+        // キーボードを表示し続ける
+        DispatchQueue.main.async {
+            textView.becomeFirstResponder()
         }
     }
     
 
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        // Returnキーで編集終了
-        if text == "\n" {
-            textView.resignFirstResponder()
+        // 文字数制限（80文字まで）
+        let currentText = textView.text ?? ""
+        let newLength = currentText.count + text.count - range.length
+        
+        // 80文字を超える場合は入力を無視
+        if newLength > 80 {
             return false
         }
+        
+        // Returnキーが押された場合
+        if text == "\n" {
+            // 現在の行数をカウント
+            let currentLineCount = countLines(in: textView)
+            
+            // 既に5行ある場合は改行を無視
+            if currentLineCount >= 5 {
+                return false
+            }
+        }
+        
+        // 入力テキストの色を黒にする
+        textView.textColor = UIColor.black
+        
         return true
+    }
+    
+    // テキストビューの行数をカウントするメソッドは維持
+    private func getLinesFromText(_ text: String) -> [String] {
+        return text.components(separatedBy: "\n")
+    }
+    
+    // テキストビューの行数をカウント
+    private func countLines(in textView: UITextView) -> Int {
+        let text = textView.text ?? ""
+        let font = textView.font ?? UIFont.systemFont(ofSize: 19)
+        
+        // 空の場合は0行
+        if text.isEmpty {
+            return 0
+        }
+        
+        let textStorage = NSTextStorage(string: text, attributes: [.font: font])
+        let textContainer = NSTextContainer(size: textView.bounds.size)
+        textContainer.lineFragmentPadding = 0 // 付箋の設定に合わせる
+        
+        let layoutManager = NSLayoutManager()
+        layoutManager.addTextContainer(textContainer)
+        textStorage.addLayoutManager(layoutManager)
+        
+        // 行数をカウント
+        var lineCount = 0
+        let glyphRange = layoutManager.glyphRange(for: textContainer)
+        
+        layoutManager.enumerateLineFragments(forGlyphRange: glyphRange) { _, _, _, _, _ in
+            lineCount += 1
+        }
+        
+        return lineCount
     }
     
     // テキスト選択を無効化
