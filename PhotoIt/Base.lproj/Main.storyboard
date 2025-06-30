@@ -41,16 +41,15 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="APq-mC-WfD">
-                                <rect key="frame" x="333" y="113" width="40" height="40"/>
+                                <rect key="frame" x="313" y="113" width="60" height="60"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="40" id="cZD-fu-iU9"/>
-                                    <constraint firstAttribute="height" constant="40" id="mse-oT-2rx"/>
+                                    <constraint firstAttribute="width" constant="60" id="4NZ-id-kcf"/>
+                                    <constraint firstAttribute="height" constant="60" id="Dvc-NU-ybX"/>
                                 </constraints>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" backgroundImage="setting 1"/>
                                 <connections>
-                                    <action selector="setting:" destination="E3U-FA-MhN" eventType="touchUpInside" id="BcQ-Rg-Tr7"/>
-                                    <segue destination="DVd-g9-8JW" kind="show" id="iYa-ZB-jEr"/>
+                                    <action selector="setting:" destination="E3U-FA-MhN" eventType="touchUpInside" id="NsT-4x-7DF"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -123,12 +122,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UgL-fy-gga" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2403.8167938931297" y="-29.577464788732396"/>
+            <point key="canvasLocation" x="2462" y="-35"/>
         </scene>
-        <!--View Controller-->
+        <!--Settings View Controller-->
         <scene sceneID="Z5X-QR-sda">
             <objects>
-                <viewController id="DVd-g9-8JW" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SettingsViewController" id="DVd-g9-8JW" customClass="SettingsViewController" customModule="PhotoIt" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8Te-FH-div">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -139,7 +138,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rwR-HM-bp9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3138" y="-30"/>
+            <point key="canvasLocation" x="2462" y="703"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="tKq-X8-XzO">

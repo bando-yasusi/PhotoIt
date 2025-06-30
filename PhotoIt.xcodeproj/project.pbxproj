@@ -10,6 +10,7 @@
 		7E90E7282E0F912F00876620 /* ArrowStickyNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E90E7272E0F912F00876620 /* ArrowStickyNoteView.swift */; };
 		7E90E72A2E0F917F00876620 /* EditPhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E90E7292E0F917F00876620 /* EditPhotoViewController.swift */; };
 		7E90E72C2E0F91C000876620 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E90E72B2E0F91C000876620 /* MainViewController.swift */; };
+		7E90E7EA2E123A0500876620 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E90E7E92E123A0500876620 /* SettingsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +18,7 @@
 		7E90E7272E0F912F00876620 /* ArrowStickyNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrowStickyNoteView.swift; sourceTree = "<group>"; };
 		7E90E7292E0F917F00876620 /* EditPhotoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPhotoViewController.swift; sourceTree = "<group>"; };
 		7E90E72B2E0F91C000876620 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		7E90E7E92E123A0500876620 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -54,6 +56,7 @@
 		7E90E7062E0F8E9E00876620 = {
 			isa = PBXGroup;
 			children = (
+				7E90E7E92E123A0500876620 /* SettingsViewController.swift */,
 				7E90E72B2E0F91C000876620 /* MainViewController.swift */,
 				7E90E7292E0F917F00876620 /* EditPhotoViewController.swift */,
 				7E90E7272E0F912F00876620 /* ArrowStickyNoteView.swift */,
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7E90E72A2E0F917F00876620 /* EditPhotoViewController.swift in Sources */,
+				7E90E7EA2E123A0500876620 /* SettingsViewController.swift in Sources */,
 				7E90E72C2E0F91C000876620 /* MainViewController.swift in Sources */,
 				7E90E7282E0F912F00876620 /* ArrowStickyNoteView.swift in Sources */,
 			);

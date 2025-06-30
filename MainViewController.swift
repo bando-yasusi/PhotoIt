@@ -41,7 +41,11 @@ class MainViewController: UIViewController {
     }
     
     @IBAction func setting(_ sender: Any) {
+        // コードで直接SettingsViewControllerをインスタンス化して表示
+        let settingsVC = SettingsViewController()
+        navigationController?.pushViewController(settingsVC, animated: true)
     }
+    
     // MARK: - Permission Handling
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -139,4 +143,3 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true)
     }
 }
-
