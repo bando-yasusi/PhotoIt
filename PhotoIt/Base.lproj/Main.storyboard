@@ -42,7 +42,7 @@
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="xvb-3j-4nS"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
                         <constraints>
                             <constraint firstItem="xvb-3j-4nS" firstAttribute="trailing" secondItem="LJR-HH-KgC" secondAttribute="trailing" constant="30" id="4hv-8u-Yba"/>
                             <constraint firstItem="LJR-HH-KgC" firstAttribute="leading" secondItem="xvb-3j-4nS" secondAttribute="leading" constant="30" id="7QX-GO-QUz"/>
@@ -80,7 +80,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="eO8-9c-9Uk"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="40"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title="save" backgroundImage="HOZON"/>
                                 <connections>
@@ -135,6 +135,9 @@
         <image name="TORU" width="1563" height="156"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGray5Color">
+            <color red="0.89803921568627454" green="0.89803921568627454" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
