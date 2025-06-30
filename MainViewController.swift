@@ -67,21 +67,42 @@ class MainViewController: UIViewController {
     }
     
     private func checkPhotoLibraryPermission() {
-        switch PHPhotoLibrary.authorizationStatus() {
-        case .authorized:
-            presentPhotoLibrary()
-        case .notDetermined:
-            PHPhotoLibrary.requestAuthorization { [weak self] status in
-                if status == .authorized {
-                    DispatchQueue.main.async {
-                        self?.presentPhotoLibrary()
+        if #available(iOS 14, *) {
+            // iOS 14以降では、アクセスレベルを指定できる
+            switch PHPhotoLibrary.authorizationStatus(for: .addOnly) {
+            case .authorized, .limited:
+                presentPhotoLibrary()
+            case .notDetermined:
+                PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
+                    if status == .authorized || status == .limited {
+                        DispatchQueue.main.async {
+                            self?.presentPhotoLibrary()
+                        }
                     }
                 }
+            case .denied, .restricted:
+                showPermissionAlert(for: "フォトライブラリ")
+            @unknown default:
+                break
             }
-        case .denied, .restricted, .limited:
-            showPermissionAlert(for: "フォトライブラリ")
-        @unknown default:
-            break
+        } else {
+            // iOS 14未満の場合は従来の方法を使用
+            switch PHPhotoLibrary.authorizationStatus() {
+            case .authorized:
+                presentPhotoLibrary()
+            case .notDetermined:
+                PHPhotoLibrary.requestAuthorization { [weak self] status in
+                    if status == .authorized {
+                        DispatchQueue.main.async {
+                            self?.presentPhotoLibrary()
+                        }
+                    }
+                }
+            case .denied, .restricted:
+                showPermissionAlert(for: "フォトライブラリ")
+            @unknown default:
+                break
+            }
         }
     }
     
@@ -143,3 +164,4 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
         picker.dismiss(animated: true)
     }
 }
+
