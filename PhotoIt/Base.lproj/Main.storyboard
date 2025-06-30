@@ -17,17 +17,25 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LJR-HH-KgC">
-                                <rect key="frame" x="30" y="653" width="333" height="40"/>
+                                <rect key="frame" x="30" y="643" width="333" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="MWV-0v-Hr7"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                <state key="normal" title="Take a photo" backgroundImage="setting"/>
+                                <state key="normal" title="Take a photo" backgroundImage="TORU"/>
                                 <connections>
                                     <action selector="takePhotoButtonTapped:" destination="E3U-FA-MhN" eventType="touchUpInside" id="E1v-Bo-H6C"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2JF-Kf-lHk">
-                                <rect key="frame" x="30" y="573" width="333" height="40"/>
+                                <rect key="frame" x="30" y="553" width="333" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="ttV-Ui-Vs5"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="26"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                <state key="normal" title="Select an image" backgroundImage="setting"/>
+                                <state key="normal" title="Select an image" backgroundImage="ERABU"/>
                                 <connections>
                                     <action selector="selectPhotoButtonTapped:" destination="E3U-FA-MhN" eventType="touchUpInside" id="Azt-ym-iuM"/>
                                 </connections>
@@ -65,12 +73,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="30V-g5-dfg">
-                                <rect key="frame" x="0.0" y="109" width="393" height="339"/>
+                                <rect key="frame" x="0.0" y="109" width="393" height="329"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uJs-EI-jc1">
-                                <rect key="frame" x="20" y="458" width="353" height="40"/>
+                                <rect key="frame" x="20" y="448" width="353" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="eO8-9c-9Uk"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="40"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                <state key="normal" title="save" backgroundImage="setting"/>
+                                <state key="normal" title="save" backgroundImage="HOZON"/>
                                 <connections>
                                     <action selector="saveButtonTapped:" destination="ck9-gZ-izM" eventType="touchUpInside" id="UlM-5b-eJO"/>
                                 </connections>
@@ -118,7 +130,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="setting" width="300" height="40"/>
+        <image name="ERABU" width="1563" height="156"/>
+        <image name="HOZON" width="1563" height="158"/>
+        <image name="TORU" width="1563" height="156"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
