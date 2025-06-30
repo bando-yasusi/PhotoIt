@@ -40,6 +40,19 @@
                                     <action selector="selectPhotoButtonTapped:" destination="E3U-FA-MhN" eventType="touchUpInside" id="Azt-ym-iuM"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="APq-mC-WfD">
+                                <rect key="frame" x="333" y="113" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="cZD-fu-iU9"/>
+                                    <constraint firstAttribute="height" constant="40" id="mse-oT-2rx"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" backgroundImage="setting 1"/>
+                                <connections>
+                                    <action selector="setting:" destination="E3U-FA-MhN" eventType="touchUpInside" id="BcQ-Rg-Tr7"/>
+                                    <segue destination="DVd-g9-8JW" kind="show" id="iYa-ZB-jEr"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="xvb-3j-4nS"/>
                         <color key="backgroundColor" systemColor="systemGray5Color"/>
@@ -48,7 +61,9 @@
                             <constraint firstItem="LJR-HH-KgC" firstAttribute="leading" secondItem="xvb-3j-4nS" secondAttribute="leading" constant="30" id="7QX-GO-QUz"/>
                             <constraint firstItem="2JF-Kf-lHk" firstAttribute="centerX" secondItem="FDn-0w-YLm" secondAttribute="centerX" id="LRY-Pk-svm"/>
                             <constraint firstItem="xvb-3j-4nS" firstAttribute="trailing" secondItem="2JF-Kf-lHk" secondAttribute="trailing" constant="30" id="NOZ-5s-Twy"/>
+                            <constraint firstItem="xvb-3j-4nS" firstAttribute="trailing" secondItem="APq-mC-WfD" secondAttribute="trailing" constant="20" id="VI7-Gs-xvf"/>
                             <constraint firstItem="LJR-HH-KgC" firstAttribute="top" secondItem="2JF-Kf-lHk" secondAttribute="bottom" constant="40" id="aQ6-M1-gsp"/>
+                            <constraint firstItem="APq-mC-WfD" firstAttribute="top" secondItem="xvb-3j-4nS" secondAttribute="top" constant="10" id="ced-8M-zqI"/>
                             <constraint firstItem="2JF-Kf-lHk" firstAttribute="leading" secondItem="xvb-3j-4nS" secondAttribute="leading" constant="30" id="cz8-8r-zkr"/>
                             <constraint firstItem="xvb-3j-4nS" firstAttribute="bottom" secondItem="LJR-HH-KgC" secondAttribute="bottom" constant="125" id="d0R-uv-Dru"/>
                             <constraint firstItem="LJR-HH-KgC" firstAttribute="centerX" secondItem="FDn-0w-YLm" secondAttribute="centerX" id="o9k-gt-TQJ"/>
@@ -110,6 +125,22 @@
             </objects>
             <point key="canvasLocation" x="2403.8167938931297" y="-29.577464788732396"/>
         </scene>
+        <!--View Controller-->
+        <scene sceneID="Z5X-QR-sda">
+            <objects>
+                <viewController id="DVd-g9-8JW" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8Te-FH-div">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="cJb-DK-VVa"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="FhW-Sw-6ln"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="rwR-HM-bp9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3138" y="-30"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="tKq-X8-XzO">
             <objects>
@@ -133,6 +164,7 @@
         <image name="ERABU" width="1563" height="156"/>
         <image name="HOZON" width="1563" height="158"/>
         <image name="TORU" width="1563" height="156"/>
+        <image name="setting 1" width="25" height="25"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

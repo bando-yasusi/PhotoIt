@@ -40,6 +40,8 @@ class MainViewController: UIViewController {
         checkPhotoLibraryPermission()
     }
     
+    @IBAction func setting(_ sender: Any) {
+    }
     // MARK: - Permission Handling
     private func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
